@@ -12,13 +12,18 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/rdmyldz/i2t/tesseract"
 )
 
 func main() {
-	dir, err := os.ReadDir(".")
+	testdir := "testdata"
+	ext := ".png"
+	// testdir := "trashdata"
+	// ext := ".tif"
+	dir, err := os.ReadDir(testdir)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -28,24 +33,24 @@ func main() {
 			continue
 		}
 
-		if strings.HasSuffix(f.Name(), ".png") {
-			pictures = append(pictures, f.Name())
+		if strings.HasSuffix(f.Name(), ext) {
+			pictures = append(pictures, filepath.Join(testdir, f.Name()))
 		}
 	}
-
+	fmt.Printf("pics: %v\n", pictures)
 	vers := tesseract.TessVersion()
 	fmt.Printf("verson: %v\n", vers)
 	// handle := C.TessBaseAPICreate()
 	// defer C.free(unsafe.Pointer(handle))
 
-	handle, err := tesseract.TessBaseAPICreate("tur+eng")
+	handle, err := tesseract.TessBaseAPICreate("tur")
 	if err != nil {
 		log.Fatalln(err)
 	}
-	err = handle.SetVariable("tessedit_char_whitelist", "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZİĞÜŞÇÖĞ")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	// err = handle.SetVariable("tessedit_char_whitelist", "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZİĞÜŞÇÖĞ")
+	// if err != nil {
+	// 	log.Fatalln(err)
+	// }
 
 	// loadedLanguages := handle.GetLoadedLanguagesAsVector()
 	// fmt.Printf("loadedLanguages: %s\n", loadedLanguages)
@@ -101,28 +106,18 @@ func main() {
 		return
 	*/
 	for _, pic := range pictures {
-		if len(pic) > 6 {
-			continue
 
-		}
-		err = handle.SetImage2(pic)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		err = handle.Recognize()
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		text, err := handle.GetUTF8Text()
+		// texts, err := handle.ProcessImage(pic)
+		texts, err := handle.ProcessImage(pic)
 		if err != nil {
 			log.Fatalln(err)
 		}
 
 		fmt.Printf("--------------%s----------------------\n", pic)
-
-		fmt.Println(text)
+		for i, t := range texts {
+			fmt.Printf("page %d\n", i+1)
+			fmt.Println(t)
+		}
 
 	}
 

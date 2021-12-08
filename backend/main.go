@@ -42,32 +42,23 @@ func (app *app) uploadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Printf("fsize in handler: %v\n", len(f))
-
+	texts, err := app.handle.ProcessImageMem(f)
+	if err != nil {
+		log.Println("error ProcessImageMem: ", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	/*
-		// Create file
-		dst, err := os.Create(handler.Filename)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer dst.Close()
+		// app.handle.SetImage2(handler.Filename)
+		app.handle.SetImage2FromMem(f)
+		app.handle.Recognize()
+		text, _ := app.handle.GetUTF8Text()
 
-		// Copy the uploaded file to the created file on the filesystem
-		if _, err := io.Copy(dst, file); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		// app.handle.End()
+		// app.handle.Delete()
 	*/
 
-	// app.handle.SetImage2(handler.Filename)
-	app.handle.SetImage2FromMem(f)
-	app.handle.Recognize()
-	text, _ := app.handle.GetUTF8Text()
-
-	// app.handle.End()
-	// app.handle.Delete()
-
-	fmt.Fprint(w, text)
+	fmt.Fprint(w, texts)
 }
 
 func (app *app) uploadHandler(w http.ResponseWriter, r *http.Request) {

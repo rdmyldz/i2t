@@ -105,7 +105,7 @@ func TestUsePixSlice(t *testing.T) {
 		path string
 	}{
 		{
-			desc: "p2.tif",
+			desc: "multipage-sample.tif",
 			path: "./testdata/multipage-sample.tif",
 		},
 		{

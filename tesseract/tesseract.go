@@ -10,6 +10,7 @@ package tesseract
 import "C"
 import (
 	"fmt"
+	"os"
 	"unsafe"
 
 	"github.com/rdmyldz/i2t/leptonica"
@@ -54,13 +55,12 @@ https://tpgit.github.io/Leptonica/readfile_8c_source.html#l00285
 */
 
 func (t *TessBaseAPI) ProcessImage(path string) ([]string, error) {
-	pixes, err := leptonica.PixRead(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("in ProcessImage, %w", err)
+		return nil, fmt.Errorf("error reading the file %s: %v", path, err)
 	}
-	defer leptonica.DestroyPixes(pixes)
 
-	return t.getText(pixes)
+	return t.ProcessImageMem(data)
 }
 
 func (t *TessBaseAPI) getText(pixes []leptonica.Pix) ([]string, error) {
@@ -86,6 +86,7 @@ func (t *TessBaseAPI) ProcessImageMem(data []byte) ([]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("in ProcessImageMem, %w", err)
 	}
+	defer leptonica.DestroyPixes(pixes)
 
 	return t.getText(pixes)
 }

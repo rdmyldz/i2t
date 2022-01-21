@@ -1,6 +1,7 @@
 package tesseract
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -24,102 +25,69 @@ func TestTessVersion(t *testing.T) {
 	}
 }
 
-// func TestGetText(t *testing.T) {
-// 	handle, err := TessBaseAPICreate("tur")
-// 	if err != nil {
-// 		t.Fatalf("err creating tesseract: %v", err)
-// 	}
+func TestTessBaseAPI_ProcessImage(t *testing.T) {
+	const testMessage string = "This is test message\n"
+	const testLazyFox string = `This is a lot of 12 point text to test the
+ocr code and see if it works on all types
+of file format.
 
-// 	testCases := []struct {
-// 		desc string
-// 		path string
-// 	}{
-// 		{
-// 			desc: "a.png",
-// 			path: "../testdata/a.png",
-// 		},
-// 	}
-// 	for _, tC := range testCases {
-// 		t.Run(tC.desc, func(t *testing.T) {
-// 			err := handle.SetImage2(tC.path)
-// 			if err != nil {
-// 				t.Errorf(err.Error())
-// 			}
-// 			err = handle.Recognize()
-// 			if err != nil {
-// 				t.Errorf(err.Error())
-// 			}
+The quick brown dog jumped over the
+lazy fox. The quick brown dog jumped
+over the lazy fox. The quick brown dog
+jumped over the lazy fox. The quick
+brown dog jumped over the lazy fox.
+`
 
-// 			text, err := handle.GetUTF8Text()
-// 			if err != nil {
-// 				t.Errorf(err.Error())
-// 			}
-// 			t.Logf("got the text: %s", text)
-// 		})
-// 	}
-// }
-
-// func TestGetTextFromTIFF(t *testing.T) {
-// 	handle, err := TessBaseAPICreate("tur")
-// 	if err != nil {
-// 		t.Fatalf("err creating tesseract: %v", err)
-// 	}
-
-// 	testCases := []struct {
-// 		desc string
-// 		path string
-// 	}{
-// 		{
-// 			desc: "p2.tif",
-// 			path: "../trashdata/p2.tif",
-// 		},
-// 	}
-// 	for _, tC := range testCases {
-// 		t.Run(tC.desc, func(t *testing.T) {
-// 			err := handle.SetImage2(tC.path)
-// 			if err != nil {
-// 				t.Errorf(err.Error())
-// 			}
-// 			err = handle.Recognize()
-// 			if err != nil {
-// 				t.Errorf(err.Error())
-// 			}
-
-// 			text, err := handle.GetUTF8Text()
-// 			if err != nil {
-// 				t.Errorf(err.Error())
-// 			}
-// 			t.Logf("got the text: %s", text)
-// 		})
-// 	}
-// }
-
-func TestUsePixSlice(t *testing.T) {
-	handle, err := TessBaseAPICreate("tur")
-	if err != nil {
-		t.Fatalf("err creating tesseract: %v", err)
-	}
-
-	testCases := []struct {
-		desc string
-		path string
+	tests := []struct {
+		name    string
+		path    string
+		lang    string
+		want    []string
+		wantErr bool
 	}{
 		{
-			desc: "multipage-sample.tif",
-			path: "./testdata/multipage-sample.tif",
+			name:    "nonexistent image",
+			path:    "testdata/nonexist.png",
+			lang:    "eng",
+			wantErr: true,
 		},
 		{
-			desc: "a.png",
-			path: "./testdata/a.png",
+			name:    "test_la.png",
+			path:    "testdata/test_la.png",
+			lang:    "eng",
+			want:    []string{testMessage},
+			wantErr: false,
+		},
+		{
+			name:    "test.png",
+			path:    "testdata/test.png",
+			lang:    "eng",
+			want:    []string{testLazyFox},
+			wantErr: false,
+		},
+		{
+			name:    "test.tiff",
+			path:    "testdata/test.tiff",
+			lang:    "eng",
+			want:    []string{testLazyFox},
+			wantErr: false,
 		},
 	}
-	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			text, err := handle.ProcessImage(tC.path)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			handle, err := TessBaseAPICreate(tt.lang)
 			if err != nil {
-				t.Errorf(err.Error())
+				t.Fatalf("error creating handle: %v", err)
 			}
-			t.Logf("got the text: %v", text)
+			got, err := handle.ProcessImage(tt.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("handle.ProcessImage() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("handle.ProcessImage() = %q, want %v", got, tt.want)
+			}
 		})
 	}
 }

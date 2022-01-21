@@ -57,7 +57,7 @@ https://tpgit.github.io/Leptonica/readfile_8c_source.html#l00285
 func (t *TessBaseAPI) ProcessImage(path string) ([]string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("error reading the file %s: %v", path, err)
+		return nil, fmt.Errorf("in ProcessImage, error reading file: %w", err)
 	}
 
 	return t.ProcessImageMem(data)

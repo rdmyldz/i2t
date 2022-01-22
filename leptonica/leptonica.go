@@ -100,6 +100,14 @@ func DestroyPixes(pixes []Pix) {
 // LEPT_DLL extern PIX * pixReadMem ( const l_uint8 *data, size_t size );
 // LEPT_DLL extern l_ok findFileFormatBuffer ( const l_uint8 *buf, l_int32 *pformat );
 // LEPT_DLL extern PIX * pixReadMemTiff ( const l_uint8 *cdata, size_t size, l_int32 n );
+/*
+	for JPEG
+	https://tpgit.github.io/Leptonica/readfile_8c_source.html
+	row:=00306  if ((pix = pixReadStreamJpeg(fp, READ_24_BIT_COLOR, 1, NULL, hint))
+	pixReadMemJpeg( const l_uint8  *cdata, size_t size, l_int32 cmflag, l_int32 reduction, l_int32 *pnwarn, l_int32 hint)
+	pixReadStreamJpeg( FILE *fp, l_int32 cmflag, l_int32 reduction, l_int32 *pnwarn, l_int32 hint)
+	LEPT_DLL extern PIX * pixReadMemJpeg (const l_uint8 *data, size_t size, l_int32 cmflag, l_int32 reduction, l_int32 *pnwarn, l_int32 hint );
+*/
 func PixReadMem(data []byte) ([]Pix, error) {
 	var img Pix
 	var pages []Pix
@@ -119,7 +127,9 @@ func PixReadMem(data []byte) ([]Pix, error) {
 			return nil, fmt.Errorf("error reading png")
 		}
 		pages = append(pages, img)
-	case IFF_TIFF, IFF_TIFF_PACKBITS, IFF_TIFF_RLE, IFF_TIFF_G3, IFF_TIFF_G4, IFF_TIFF_LZW, IFF_TIFF_ZIP:
+
+	case IFF_TIFF, IFF_TIFF_PACKBITS, IFF_TIFF_RLE, IFF_TIFF_G3,
+		IFF_TIFF_G4, IFF_TIFF_LZW, IFF_TIFF_ZIP:
 		log.Printf("the pic is TIFF File: %v\n", cFormat)
 
 		for pageNum := 0; ; pageNum++ {
@@ -129,6 +139,58 @@ func PixReadMem(data []byte) ([]Pix, error) {
 			}
 			pages = append(pages, img)
 		}
+
+	case IFF_BMP:
+		log.Printf("the pic is BMP File: %v\n", cFormat)
+		img = C.pixReadMemBmp(f, C.ulong(size))
+		if img == nil {
+			return nil, fmt.Errorf("error reading BMP")
+		}
+		pages = append(pages, img)
+
+	case IFF_JFIF_JPEG:
+		log.Printf("the pic is JPEG File: %v\n", cFormat)
+		img = C.pixReadMemJpeg(f, C.ulong(size), 0, 1, nil, 0)
+		if img == nil {
+			return nil, fmt.Errorf("error reading JPEG")
+		}
+		pages = append(pages, img)
+
+	case IFF_PNM:
+		log.Printf("the pic is PNM File: %v\n", cFormat)
+		img = C.pixReadMemPnm(f, C.ulong(size))
+		if img == nil {
+			return nil, fmt.Errorf("error reading PNM")
+		}
+		pages = append(pages, img)
+
+	case IFF_GIF:
+		log.Printf("the pic is GIF File: %v\n", cFormat)
+		img = C.pixReadMemGif(f, C.ulong(size))
+		if img == nil {
+			return nil, fmt.Errorf("error reading GIF")
+		}
+		pages = append(pages, img)
+
+	case IFF_WEBP:
+		log.Printf("the pic is WEBP File: %v\n", cFormat)
+		img = C.pixReadMemWebP(f, C.ulong(size))
+		if img == nil {
+			return nil, fmt.Errorf("error reading WEBP")
+		}
+		pages = append(pages, img)
+
+	case IFF_SPIX:
+		log.Printf("the pic is SPIX File: %v\n", cFormat)
+		img = C.pixReadMemSpix(f, C.ulong(size))
+		if img == nil {
+			return nil, fmt.Errorf("error reading SPIX")
+		}
+		pages = append(pages, img)
+
+	case IFF_JP2:
+		return nil, fmt.Errorf("JP2 not supported")
+
 	case IFF_UNKNOWN:
 		return nil, fmt.Errorf("unknown format: no pix returned")
 	}

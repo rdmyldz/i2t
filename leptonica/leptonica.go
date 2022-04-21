@@ -122,7 +122,7 @@ func PixReadMem(data []byte) ([]Pix, error) {
 	switch cFormat {
 	case IFF_PNG:
 		log.Printf("the pic is PNG File: %v\n", cFormat)
-		img = C.pixReadMemPng(f, C.ulong(size))
+		img = C.pixReadMemPng(f, c_ulong(size))
 		if img == nil {
 			return nil, fmt.Errorf("error reading png")
 		}
@@ -133,7 +133,7 @@ func PixReadMem(data []byte) ([]Pix, error) {
 		log.Printf("the pic is TIFF File: %v\n", cFormat)
 
 		for pageNum := 0; ; pageNum++ {
-			img = C.pixReadMemTiff(f, C.ulong(size), C.int(pageNum))
+			img = C.pixReadMemTiff(f, c_ulong(size), C.int(pageNum))
 			if img == nil {
 				break
 			}
@@ -142,7 +142,7 @@ func PixReadMem(data []byte) ([]Pix, error) {
 
 	case IFF_BMP:
 		log.Printf("the pic is BMP File: %v\n", cFormat)
-		img = C.pixReadMemBmp(f, C.ulong(size))
+		img = C.pixReadMemBmp(f, c_ulong(size))
 		if img == nil {
 			return nil, fmt.Errorf("error reading BMP")
 		}
@@ -150,7 +150,7 @@ func PixReadMem(data []byte) ([]Pix, error) {
 
 	case IFF_JFIF_JPEG:
 		log.Printf("the pic is JPEG File: %v\n", cFormat)
-		img = C.pixReadMemJpeg(f, C.ulong(size), 0, 1, nil, 0)
+		img = C.pixReadMemJpeg(f, c_ulong(size), 0, 1, nil, 0)
 		if img == nil {
 			return nil, fmt.Errorf("error reading JPEG")
 		}
@@ -158,7 +158,7 @@ func PixReadMem(data []byte) ([]Pix, error) {
 
 	case IFF_PNM:
 		log.Printf("the pic is PNM File: %v\n", cFormat)
-		img = C.pixReadMemPnm(f, C.ulong(size))
+		img = C.pixReadMemPnm(f, c_ulong(size))
 		if img == nil {
 			return nil, fmt.Errorf("error reading PNM")
 		}
@@ -166,7 +166,7 @@ func PixReadMem(data []byte) ([]Pix, error) {
 
 	case IFF_GIF:
 		log.Printf("the pic is GIF File: %v\n", cFormat)
-		img = C.pixReadMemGif(f, C.ulong(size))
+		img = C.pixReadMemGif(f, c_ulong(size))
 		if img == nil {
 			return nil, fmt.Errorf("error reading GIF")
 		}
@@ -174,7 +174,7 @@ func PixReadMem(data []byte) ([]Pix, error) {
 
 	case IFF_WEBP:
 		log.Printf("the pic is WEBP File: %v\n", cFormat)
-		img = C.pixReadMemWebP(f, C.ulong(size))
+		img = C.pixReadMemWebP(f, c_ulong(size))
 		if img == nil {
 			return nil, fmt.Errorf("error reading WEBP")
 		}
@@ -182,7 +182,7 @@ func PixReadMem(data []byte) ([]Pix, error) {
 
 	case IFF_SPIX:
 		log.Printf("the pic is SPIX File: %v\n", cFormat)
-		img = C.pixReadMemSpix(f, C.ulong(size))
+		img = C.pixReadMemSpix(f, c_ulong(size))
 		if img == nil {
 			return nil, fmt.Errorf("error reading SPIX")
 		}

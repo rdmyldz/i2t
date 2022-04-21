@@ -3,10 +3,8 @@ package tesseract
 // #cgo CFLAGS: -g -Wall
 // #cgo pkg-config: tesseract
 // #cgo LDFLAGS: -llept
-// #include "/usr/include/tesseract/capi.h"
-// #include "/usr/include/leptonica/allheaders.h"
-// #include <stdlib.h>
-// #include <stdio.h>
+// #include <tesseract/capi.h>
+// #include <leptonica/allheaders.h>
 import "C"
 import (
 	"fmt"

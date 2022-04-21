@@ -1,13 +1,5 @@
 package main
 
-// #cgo CFLAGS: -g -Wall
-// #cgo pkg-config: tesseract
-// #cgo LDFLAGS: -llept
-// #include <stdio.h>
-// #include <stdlib.h>
-// #include "/usr/include/leptonica/allheaders.h"
-// #include "/usr/include/tesseract/capi.h"
-import "C"
 import (
 	"fmt"
 	"log"

@@ -1,8 +1,7 @@
 package leptonica
 
 // #cgo LDFLAGS: -llept
-// #include "leptonica/allheaders.h"
-// #include <stdlib.h>
+// #include <leptonica/allheaders.h>
 import "C"
 import (
 	"fmt"

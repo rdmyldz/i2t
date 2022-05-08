@@ -1,21 +1,40 @@
 package tesseract
 
-// #cgo CFLAGS: -g -Wall
+// #cgo CFLAGS: -g
 // #cgo pkg-config: tesseract
 // #cgo LDFLAGS: -llept
+// #include <stdbool.h>
 // #include <tesseract/capi.h>
 // #include <leptonica/allheaders.h>
+/*
+bool gocb(void *ctx, int a);
+*/
 import "C"
 import (
 	"fmt"
+	"log"
 	"os"
 	"unsafe"
 
 	"github.com/rdmyldz/i2t/leptonica"
 )
 
+//export gocb
+func gocb(ctx unsafe.Pointer, words C.int) C.bool {
+	fmt.Println("callback invoked")
+	return true
+}
+
+func (t *TessBaseAPI) SetCancelFunc() {
+	C.TessMonitorSetCancelFunc(
+		t.Mon,
+		(C.TessCancelFunc)(unsafe.Pointer(C.gocb)),
+	)
+}
+
 type TessBaseAPI struct {
 	TBA *C.TessBaseAPI
+	Mon *C.ETEXT_DESC
 }
 
 func TessVersion() string {
@@ -36,6 +55,26 @@ func TessBaseAPICreate(language string) (*TessBaseAPI, error) {
 
 	tess := new(TessBaseAPI)
 	tess.TBA = handle
+
+	return tess, nil
+}
+
+// TessBaseAPICreateWithMonitor use this if you wanna cancel
+func TessBaseAPICreateWithMonitor(language string) (*TessBaseAPI, error) {
+	handle := C.TessBaseAPICreate()
+	mon := C.TessMonitorCreate()
+
+	cLanguage := C.CString(language)
+	defer C.free(unsafe.Pointer(cLanguage))
+
+	res := C.TessBaseAPIInit3(handle, nil, cLanguage)
+	if res != 0 {
+		return nil, fmt.Errorf("error initializing tesseract")
+	}
+
+	tess := new(TessBaseAPI)
+	tess.TBA = handle
+	tess.Mon = mon
 
 	return tess, nil
 }
@@ -100,8 +139,8 @@ func (t *TessBaseAPI) SetImage2(img *C.PIX) {
 }
 
 func (t *TessBaseAPI) Recognize() error {
-	if C.TessBaseAPIRecognize(t.TBA, nil) != 0 {
-		return fmt.Errorf("error in tesseract recognition")
+	if err := C.TessBaseAPIRecognize(t.TBA, t.Mon); err != 0 {
+		return fmt.Errorf("error in tesseract recognition: %v", err)
 	}
 
 	return nil
@@ -118,10 +157,15 @@ func (t *TessBaseAPI) GetUTF8Text() (string, error) {
 }
 
 func (t *TessBaseAPI) End() {
+	log.Println("End Called")
 	C.TessBaseAPIEnd(t.TBA)
 }
 
 func (t *TessBaseAPI) Delete() {
+	log.Println("Delete Called")
+	if t.Mon != nil {
+		C.TessMonitorDelete(t.Mon)
+	}
 	C.TessBaseAPIDelete(t.TBA)
 }
 
